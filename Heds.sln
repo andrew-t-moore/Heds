@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Heds", "Heds\Heds.csproj", "{73B7D262-6E66-439B-B129-374020484E47}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Heds.Tests", "Heds.Tests\Heds.Tests.csproj", "{4F24C516-C06E-4DD5-94A4-128A1F61A90B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{73B7D262-6E66-439B-B129-374020484E47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73B7D262-6E66-439B-B129-374020484E47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73B7D262-6E66-439B-B129-374020484E47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73B7D262-6E66-439B-B129-374020484E47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F24C516-C06E-4DD5-94A4-128A1F61A90B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F24C516-C06E-4DD5-94A4-128A1F61A90B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F24C516-C06E-4DD5-94A4-128A1F61A90B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F24C516-C06E-4DD5-94A4-128A1F61A90B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
