@@ -50,6 +50,15 @@ namespace Heds
         {
             return _halfEdges.Any(e => e.From.Equals(vertex));
         }
+
+        public Vector3 GetSurfaceNormal()
+        {
+            var a = _halfEdges[0].From.Position;
+            var b = _halfEdges[1].From.Position;
+            var c = _halfEdges[2].From.Position;
+
+            return new Plane(a, b, c).normal;
+        }
         
         public bool Equals(Face other)
         {
