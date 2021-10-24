@@ -31,6 +31,7 @@ namespace Heds.Tests.Operations
         public void NewMeshIsTopologicallyTheSame()
         {
             var oldMesh = QuadCube.Create()
+                .Triangulate()
                 .SubdivideTriangles()
                 .SubdivideTriangles();
         

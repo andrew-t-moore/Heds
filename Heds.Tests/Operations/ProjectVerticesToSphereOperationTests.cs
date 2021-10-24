@@ -14,6 +14,7 @@ namespace Heds.Tests.Operations
             const float radius = 5f;
 
             QuadCube.Create()
+                .Triangulate()
                 .SubdivideTriangles()
                 .SubdivideTriangles()
                 .ProjectVerticesToSphere(radius)
@@ -28,6 +29,7 @@ namespace Heds.Tests.Operations
             const float radius = 5f;
 
             var oldMesh = QuadCube.Create()
+                .Triangulate()
                 .SubdivideTriangles()
                 .SubdivideTriangles();
         

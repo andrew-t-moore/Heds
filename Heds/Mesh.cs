@@ -144,7 +144,7 @@ namespace Heds
         /// A convenience method that allows for easier creation of faces. Uses existing half-edges
         /// if they are present and creates new ones when required.
         /// </summary>
-        public Mesh AddFace(Vertex[] vertices, out Face newFace)
+        public Face AddFace(Vertex[] vertices)
         {
             var halfEdges = vertices
                 .Select((v, i) =>
@@ -156,7 +156,17 @@ namespace Heds
                 })
                 .ToArray();
 
-            return AddFace(halfEdges, out newFace);
+            return AddFace(halfEdges);
+        }
+
+        /// <summary>
+        /// A convenience method that allows for easier creation of faces. Uses existing half-edges
+        /// if they are present and creates new ones when required.
+        /// </summary>
+        public Mesh AddFace(Vertex[] vertices, out Face newFace)
+        {
+            newFace = AddFace(vertices);
+            return this;
         }
 
         /// <summary>
