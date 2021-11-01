@@ -5,7 +5,7 @@ namespace Heds.Operations
     /// <summary>
     /// An operation that translates (moves) the mesh around.
     /// </summary>
-    public class TranslateOperation : VertexTransformOperation
+    public class TranslateOperation : IOperation
     {
         private readonly Vector3 _translation;
 
@@ -14,9 +14,12 @@ namespace Heds.Operations
             _translation = translation;
         }
 
-        public override Vector3 Transform(Vector3 vertexPosition)
+        public void Apply(Mesh mesh)
         {
-            return vertexPosition + _translation;
+            foreach (var vertex in mesh.Vertices)
+            {
+                vertex.Position = vertex.Position + _translation;
+            }
         }
     }
 }

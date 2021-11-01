@@ -53,7 +53,8 @@ namespace Heds.Tests.Operations
         )
         {
             var originalMesh = QuadCube.Create();
-            var scaledMesh = transform(originalMesh);
+            var newMesh = originalMesh.Clone();
+            var scaledMesh = transform(newMesh);
 
             var originalBoundingBox = originalMesh.GetBoundingBox();
             var scaledBoundingBox = scaledMesh.GetBoundingBox();

@@ -5,7 +5,7 @@ namespace Heds.Operations
     /// <summary>
     /// An operation that scales the entire mesh bigger or smaller.
     /// </summary>
-    public class ScaleOperation : VertexTransformOperation
+    public class ScaleOperation : IOperation
     {
         private readonly Vector3 _scale;
         
@@ -22,13 +22,14 @@ namespace Heds.Operations
             _scale = scale;
         }
         
-        public override Vector3 Transform(Vector3 vertexPosition)
+        public void Apply(Mesh mesh)
         {
-            return new Vector3(
-                vertexPosition.x * _scale.x,
-                vertexPosition.y * _scale.y,
-                vertexPosition.z * _scale.z
-            );
+            foreach (var vertex in mesh.Vertices)
+            {
+                var pos = vertex.Position;
+                pos.Scale(_scale);
+                vertex.Position = pos;
+            }
         }
     }
 }

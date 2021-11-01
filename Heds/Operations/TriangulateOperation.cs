@@ -9,28 +9,20 @@ namespace Heds.Operations
     /// </summary>
     public class TriangulateOperation : IOperation
     {
-        public Mesh Apply(Mesh oldMesh)
+        public void Apply(Mesh mesh)
         {
-            var newMesh = new Mesh();
-            var vertexMap = new Dictionary<Vertex, Vertex>();
-
-            foreach (var oldVertex in oldMesh.Vertices)
+            var faces = mesh.Faces.ToArray();
+            
+            foreach (var existingFace in faces)
             {
-                vertexMap[oldVertex] = newMesh.AddVertex(oldVertex.Position);
-            }
-
-            foreach (var oldFace in oldMesh.Faces)
-            {
-                var vertices = oldFace.HalfEdges
-                    .Select(e => vertexMap[e.From])
-                    .ToArray();
-
-                if (oldFace.HalfEdges.Count == 3)
+                if (!existingFace.IsTriangle)
                 {
-                    newMesh.AddFace(vertices, out _);
-                }
-                else
-                {
+                    mesh.RemoveFace(existingFace);
+
+                    var vertices = existingFace
+                        .Vertices
+                        .ToArray();
+                    
                     var p1 = vertices[0];
 
                     for (var i = 2; i < vertices.Length; i++)
@@ -38,12 +30,10 @@ namespace Heds.Operations
                         var p2 = vertices[i - 1];
                         var p3 = vertices[i];
 
-                        newMesh.AddFace(new[]{ p1, p2, p3 }, out _);
+                        mesh.AddFace(new[]{ p1, p2, p3 }, out _);
                     }
                 }
             }
-
-            return newMesh;
         }
     }
 }

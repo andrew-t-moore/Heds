@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace Heds.Operations
 {
@@ -11,23 +12,30 @@ namespace Heds.Operations
     /// </summary>
     public class GeometricDualOperation : IOperation
     {
-        public Mesh Apply(Mesh oldMesh)
+        public void Apply(Mesh mesh)
         {
-            var newMesh = new Mesh();
+            var existingVertices = mesh.Vertices.ToArray();
 
-            var faceToVertexMap = oldMesh.Faces
-                .ToDictionary(f => f, f => newMesh.AddVertex(f.GetMidpoint()));
+            var faceMidpoints = mesh.Faces
+                .ToDictionary(f => f, f => f.GetMidpoint());
+            
+            var adjacentFaceList = existingVertices
+                .Select(GetIncidentFacesWithSameWindingOrder)
+                .ToArray();
+            
+            mesh.Clear();
 
-            foreach (var oldVertex in oldMesh.Vertices)
+            var newVertexMap = faceMidpoints
+                .ToDictionary(f => f.Key, f => mesh.AddVertex(f.Value));
+            
+            foreach (var faceList in adjacentFaceList)
             {
-                var newFaceVertices = GetIncidentFacesWithSameWindingOrder(oldVertex)
-                    .Select(f => faceToVertexMap[f])
+                var vertices = faceList
+                    .Select(f => newVertexMap[f])
                     .ToArray();
 
-                newMesh.AddFace(newFaceVertices, out _);
+                mesh.AddFace(vertices);
             }
-
-            return newMesh;
         }
 
         IReadOnlyList<Face> GetIncidentFacesWithSameWindingOrder(Vertex vertex)

@@ -6,7 +6,7 @@ namespace Heds.Operations
     /// Builds a new sphere where all vertices have been clamped within two radii
     /// (based on the origin) - an inner radius and an outer radius.
     /// </summary>
-    public class ClampVerticesWithinRadiiOperation : VertexTransformOperation
+    public class ClampVerticesWithinRadiiOperation : IOperation
     {
         private readonly float _innerRadius;
         private readonly float _outerRadius;
@@ -17,11 +17,14 @@ namespace Heds.Operations
             _outerRadius = outerRadius;
         }
         
-        public override Vector3 Transform(Vector3 vertexPosition)
+        public void Apply(Mesh mesh)
         {
-            var magnitude = vertexPosition.magnitude;
-            var newMagnitude = Mathf.Clamp(magnitude, _innerRadius, _outerRadius);
-            return vertexPosition.normalized * newMagnitude;
+            foreach (var vertex in mesh.Vertices)
+            {
+                var magnitude = vertex.Position.magnitude;
+                var newMagnitude = Mathf.Clamp(magnitude, _innerRadius, _outerRadius);
+                vertex.Position = vertex.Position.normalized * newMagnitude;
+            }
         }
     }
 }

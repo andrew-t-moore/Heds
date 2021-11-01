@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Heds
 {
-    public class HalfEdge : IEquatable<HalfEdge>
+    public class HalfEdge : IEquatable<HalfEdge>, IMeshComponent
     {
         public Mesh Mesh => From.Mesh;
         public int Id { get; }

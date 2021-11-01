@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace Heds.Operations
 {
@@ -9,117 +8,100 @@ namespace Heds.Operations
     {
         private readonly int _numLevels;
 
-        private static readonly int[][] SubdividedFaceIndices =
-        {
-            new[] { 0, 1, 5 },
-            new[] { 1, 2, 3 },
-            new[] { 5, 1, 3 },
-            new[] { 5, 3, 4 }
-        };
-
         public SubdivideTrianglesOperation(int numLevels)
         {
             _numLevels = numLevels;
         }
         
-        public Mesh Apply(Mesh oldMesh)
+        public void Apply(Mesh mesh)
         {
-            var currentMesh = oldMesh;
-            
+            if (mesh.Faces.Any(f => !f.IsTriangle))
+                throw new InvalidOperationException($"Can't subdivide a mesh that contains non-triangular faces.");
+
             for (var i = 0; i < _numLevels; i++)
             {
-                currentMesh = ApplyInternal(currentMesh);
+                ApplyInternal2(mesh);
             }
-
-            return currentMesh;
         }
 
-        private Mesh ApplyInternal(Mesh oldMesh)
+        private void ApplyInternal2(Mesh mesh)
         {
-            var newMesh = new Mesh();
-            var vertexMap = new Dictionary<SubdivisionVertexId, Vertex>();
+            var midPointVertexLookup = new Dictionary<EdgeMidpoint, Vertex>();
 
-            Vertex GetOrCreateVertex(SubdivisionVertexId key)
+            Vertex GetVertexAtMidPoint(HalfEdge he)
             {
-                if (vertexMap.TryGetValue(key, out var vertex))
+                var key = new EdgeMidpoint(he.From, he.To);
+                if (midPointVertexLookup.TryGetValue(key, out var existingVertex))
                 {
-                    return vertex;
+                    return existingVertex;
                 }
-                else
-                {
-                    var newVertexPosition = key.GetPosition();
 
-                    var newVertex = newMesh.AddVertex(newVertexPosition);
-                    vertexMap[key] = newVertex;
-                    return newVertex;
-                }
+                var newVertex = mesh.AddVertex(he.GetMidPoint());
+                midPointVertexLookup[key] = newVertex;
+                return newVertex;
             }
 
-            foreach (var face in oldMesh.Faces)
+            // The loop below modifies while subdividing, so 
+            // make a copy of the faces first.
+            var facesToSubdivide = mesh.Faces.ToArray();
+            
+            foreach (var face in facesToSubdivide)
             {
-                if (!face.IsTriangle)
-                    throw new InvalidOperationException($"Can't subdivide a mesh that contains non-triangular faces.");
+                mesh.AddFace(new[]
+                {
+                    face.HalfEdges[0].From,
+                    GetVertexAtMidPoint(face.HalfEdges[0]),
+                    GetVertexAtMidPoint(face.HalfEdges[2])
+                });
                 
-                var oldVertices = face.Vertices.ToArray();
-
-                var newVertexKeys = new[]
+                mesh.AddFace(new[]
                 {
-                    SubdivisionVertexId.FromExistingVertex(oldVertices[0]),
-                    SubdivisionVertexId.FromMidpointBetweenTwoVertices(oldVertices[0], oldVertices[1]),
-                    SubdivisionVertexId.FromExistingVertex(oldVertices[1]),
-                    SubdivisionVertexId.FromMidpointBetweenTwoVertices(oldVertices[1], oldVertices[2]),
-                    SubdivisionVertexId.FromExistingVertex(oldVertices[2]),
-                    SubdivisionVertexId.FromMidpointBetweenTwoVertices(oldVertices[2], oldVertices[0])
-                };
-
-                foreach (var indices in SubdividedFaceIndices)
+                    GetVertexAtMidPoint(face.HalfEdges[0]),
+                    face.HalfEdges[1].From,
+                    GetVertexAtMidPoint(face.HalfEdges[1])
+                });
+                
+                mesh.AddFace(new[]
                 {
-                    var vertices = indices
-                        .Select(i => GetOrCreateVertex(newVertexKeys[i]))
-                        .ToArray();
+                    GetVertexAtMidPoint(face.HalfEdges[2]),
+                    GetVertexAtMidPoint(face.HalfEdges[0]),
+                    GetVertexAtMidPoint(face.HalfEdges[1])
+                });
 
-                    newMesh.AddFace(vertices, out _);
-                }
+                mesh.AddFace(new[]
+                {
+                    GetVertexAtMidPoint(face.HalfEdges[2]),
+                    GetVertexAtMidPoint(face.HalfEdges[1]),
+                    face.HalfEdges[2].From
+                });
+
+                mesh.RemoveFace(face, true);
             }
-
-            return newMesh;
         }
         
         /// <summary>
-        /// Models a point in space that is either on an existing vertex or halfway
-        /// between two existing vertices.
+        /// Models the midpoint of an edge. 
         /// </summary>
-        private class SubdivisionVertexId : IEquatable<SubdivisionVertexId>
+        private class EdgeMidpoint : IEquatable<EdgeMidpoint>
         {
             private readonly Vertex _from;
             private readonly Vertex _to;
 
-            private SubdivisionVertexId(Vertex from, Vertex to)
+            public EdgeMidpoint(Vertex from, Vertex to)
             {
-                _from = from;
-                _to = to;
+                if (from.Id < to.Id)
+                {
+                    _from = from;
+                    _to = to;
+                }
+                else
+                {
+                    _from = to;
+                    _to = from;
+                }
             }
 
-            public static SubdivisionVertexId FromExistingVertex(Vertex existingVertex)
-            {
-                return new SubdivisionVertexId(existingVertex, existingVertex);
-            }
-
-            public static SubdivisionVertexId FromMidpointBetweenTwoVertices(Vertex a, Vertex b)
-            {
-                return a.Id < b.Id 
-                    ? new SubdivisionVertexId(a, b) 
-                    : new SubdivisionVertexId(b, a);
-            }
-
-            public Vector3 GetPosition()
-            {
-                return Equals(_from, _to) 
-                    ? _from.Position 
-                    : (_from.Position + _to.Position) / 2f;
-            }
-            
-            public bool Equals(SubdivisionVertexId other)
+            public bool Equals(EdgeMidpoint other)
             {
                 if (ReferenceEquals(null, other)) return false;
                 if (ReferenceEquals(this, other)) return true;
@@ -131,7 +113,7 @@ namespace Heds.Operations
                 if (ReferenceEquals(null, obj)) return false;
                 if (ReferenceEquals(this, obj)) return true;
                 if (obj.GetType() != GetType()) return false;
-                return Equals((SubdivisionVertexId)obj);
+                return Equals((EdgeMidpoint)obj);
             }
 
             public override int GetHashCode()

@@ -1,12 +1,10 @@
-using UnityEngine;
-
 namespace Heds.Operations
 {
     /// <summary>
     /// An operation that moves all of the vertices of a mesh inwards or
     /// outwards so that all vertices are on the surface of a sphere.
     /// </summary>
-    public class ProjectVerticesToSphereOperation : VertexTransformOperation
+    public class ProjectVerticesToSphereOperation : IOperation
     {
         private readonly float _radius;
 
@@ -15,9 +13,12 @@ namespace Heds.Operations
             _radius = radius;
         }
         
-        public override Vector3 Transform(Vector3 vertexPosition)
+        public void Apply(Mesh mesh)
         {
-            return vertexPosition.normalized * _radius;
+            foreach (var vertex in mesh.Vertices)
+            {
+                vertex.Position = vertex.Position.normalized * _radius;
+            }
         }
     }
 }

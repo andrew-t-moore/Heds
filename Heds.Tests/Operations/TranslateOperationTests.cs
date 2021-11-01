@@ -17,7 +17,7 @@ namespace Heds.Tests.Operations
             const float epsilon = 0.001f;
             
             var oldMesh = QuadCube.Create();
-            var newMesh = oldMesh.Translate(new Vector3(x, y, z));
+            var newMesh = oldMesh.Clone().Translate(new Vector3(x, y, z));
 
             var oldCenter = oldMesh.GetBoundingBox().center;
             var newCenter = newMesh.GetBoundingBox().center;

@@ -8,4 +8,8 @@
       <PackageReference Include="Unity3D.SDK" Version="2021.1.14.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Remove="Operations\FilterFacesOperation.cs" />
+    </ItemGroup>
+
 </Project>

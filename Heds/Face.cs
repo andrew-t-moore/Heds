@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Heds
 {
-    public class Face : IEquatable<Face>
+    public class Face : IEquatable<Face>, IMeshComponent
     {
         public Mesh Mesh => HalfEdges[0].Mesh;
         public int Id { get; }

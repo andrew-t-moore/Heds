@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Heds.Operations;
-using Heds.Selections;
+using Heds.Utilities;
 using UnityEngine;
 
 namespace Heds
@@ -59,6 +59,70 @@ namespace Heds
                 .ToArray();
 
             return vertices;
+        }
+
+        /// <summary>
+        /// Removes a face from this mesh.
+        /// </summary>
+        public void RemoveFace(Face face, bool removeHalfEdges = false)
+        {
+            _faces.Remove(face);
+
+            if (removeHalfEdges)
+            {
+                foreach (var halfEdge in face.HalfEdges)
+                {
+                    _halfEdges.Remove(halfEdge);
+                    halfEdge.Twin?.SetFace(null);
+                    halfEdge.From.RemoveOutgoingHalfEdge(halfEdge);
+                    halfEdge.To.RemoveIncomingHalfEdge(halfEdge);
+                }
+            }
+            else
+            {
+                foreach (var halfEdge in face.HalfEdges)
+                {
+                    halfEdge.SetFace(null);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Removes all half-edges from this mesh. Will also remove
+        /// all faces in the process.
+        /// </summary>
+        public void ClearHalfEdgesAndFaces()
+        {
+            _faces.Clear();
+            _halfEdges.Clear();
+
+            foreach (var vertex in _vertices)
+            {
+                vertex.ClearHalfEdges();
+            }
+        }
+        
+        /// <summary>
+        /// Removes all faces from this mesh.
+        /// </summary>
+        public void ClearFaces()
+        {
+            _faces.Clear();
+
+            foreach (var halfEdge in _halfEdges)
+            {
+                halfEdge.SetFace(null);
+            }
+        }
+
+        /// <summary>
+        /// Clears all vertices, half-edges and faces from this mesh.
+        /// </summary>
+        public void Clear()
+        {
+            _vertices.Clear();
+            _halfEdges.Clear();
+            _faces.Clear();
         }
         
         public HalfEdge AddHalfEdge(Vertex from, Vertex to)
@@ -168,39 +232,43 @@ namespace Heds
             newFace = AddFace(vertices);
             return this;
         }
-
+        
         /// <summary>
         /// Scales a mesh.
         /// </summary>
         public Mesh Scale(Vector3 scale)
         {
-            return new ScaleOperation(scale).Apply(this);
+            new ScaleOperation(scale).Apply(this);
+            return this;
         }
-
+        
         /// <summary>
         /// Scales a mesh equally in all directions.
         /// </summary>
         public Mesh Scale(float scale)
         {
-            return new ScaleOperation(scale).Apply(this);
+            new ScaleOperation(scale).Apply(this);
+            return this;
         }
-
+        
         /// <summary>
         /// Scales a mesh.
         /// </summary>
         public Mesh Scale(float scaleX, float scaleY, float scaleZ)
         {
-            return new ScaleOperation(scaleX, scaleY, scaleZ).Apply(this);
+            new ScaleOperation(scaleX, scaleY, scaleZ).Apply(this);
+            return this;
         }
-
+        
         /// <summary>
         /// Translates (moves) a mesh.
         /// </summary>
         public Mesh Translate(Vector3 translation)
         {
-            return new TranslateOperation(translation).Apply(this);
+            new TranslateOperation(translation).Apply(this);
+            return this;
         }
-
+        
         /// <summary>
         /// Builds a new mesh where every vertex has been moved inwards or outwards
         /// until it falls on the surface of a sphere of the given radius. In other
@@ -208,51 +276,54 @@ namespace Heds
         /// </summary>
         public Mesh ProjectVerticesToSphere(float radius)
         {
-            return new ProjectVerticesToSphereOperation(radius).Apply(this);
+            new ProjectVerticesToSphereOperation(radius).Apply(this);
+            return this;
         }
-
-        /// <summary>
-        /// Builds a new sphere where all vertices have been clamped within two radii
-        /// (based on the origin) - an inner radius and an outer radius.
-        /// </summary>
-        public Mesh ClampVerticesWithinRadiiOperation(float innerRadius, float outerRadius)
-        {
-            return new ClampVerticesWithinRadiiOperation(innerRadius, outerRadius).Apply(this);
-        }
-
+        
+        // /// <summary>
+        // /// Builds a new sphere where all vertices have been clamped within two radii
+        // /// (based on the origin) - an inner radius and an outer radius.
+        // /// </summary>
+        // public Mesh ClampVerticesWithinRadiiOperation(float innerRadius, float outerRadius)
+        // {
+        //     return new ClampVerticesWithinRadiiOperation(innerRadius, outerRadius).Apply(this);
+        // }
+        
         /// <summary>
         /// Builds a new mesh where each triangle has been subdivided into multiple triangles.
         /// For each level of subdivision, the number of triangles is multiplied by 4.
         /// </summary>
         public Mesh SubdivideTriangles(int numLevels = 1)
         {
-            return new SubdivideTrianglesOperation(numLevels).Apply(this);
-        }
-
-        /// <summary>
-        /// Filters a mesh down to only the requested faces.
-        /// </summary>
-        public Mesh Filter(FaceSelection selection)
-        {
-            return new FilterFacesOperation(selection).Apply(this);
+            new SubdivideTrianglesOperation(numLevels).Apply(this);
+            return this;
         }
         
-        /// <summary>
-        /// Filters a mesh down to only the requested faces.
-        /// </summary>
-        public Mesh Filter(params Face[] faces)
-        {
-            return Filter(new FaceSelection(faces));
-        }
+        // /// <summary>
+        // /// Filters a mesh down to only the requested faces.
+        // /// </summary>
+        // public Mesh Filter(FaceSelection selection)
+        // {
+        //     return new FilterFacesOperation(selection).Apply(this);
+        // }
+        //
+        // /// <summary>
+        // /// Filters a mesh down to only the requested faces.
+        // /// </summary>
+        // public Mesh Filter(params Face[] faces)
+        // {
+        //     return Filter(new FaceSelection(faces));
+        // }
         
         /// <summary>
         /// Rebuilds the faces of a mesh so that all the faces are triangles.
         /// </summary>
         public Mesh Triangulate()
         {
-            return new TriangulateOperation().Apply(this);
+            new TriangulateOperation().Apply(this);
+            return this;
         }
-
+        
         /// <summary>
         /// Creates the geometric dual of a mesh, i.e. a mesh where each
         /// face is replaced by a vertex and each vertex is replaced with
@@ -260,7 +331,8 @@ namespace Heds
         /// </summary>
         public Mesh GeometricDual()
         {
-            return new GeometricDualOperation().Apply(this);
+            new GeometricDualOperation().Apply(this);
+            return this;
         }
 
         /// <summary>
@@ -303,17 +375,40 @@ namespace Heds
             
             return new Bounds(center, size);
         }
-        
-        /// <returns>
-        /// For convenience.
-        /// If this mesh already only contains triangular faces, returns this mesh.
-        /// If this mesh contains non-triangular faces, returns a new mesh where
-        /// all faces have been converted to triangles.
-        /// </returns>
-        /// <seealso cref="Triangulate"/>
-        public Mesh EnsureMeshOnlyContainsTriangularFaces()
+
+        /// <summary>
+        /// Creates a deep clone of this mesh. All new (but equivalent) faces, half-edges
+        /// and vertices will be created.
+        /// </summary>
+        public Mesh Clone()
         {
-            return Faces.All(f => f.IsTriangle) ? this : Triangulate();
+            var newMesh = new Mesh();
+
+            var vertexMap = _vertices
+                .ToDictionary(
+                    v => v,
+                    v => newMesh.AddVertex(v.Position)
+                );
+
+            var halfEdgeMap = _halfEdges
+                .ToDictionary(
+                    he => he,
+                    he => newMesh.AddHalfEdge(
+                        vertexMap[he.From],
+                        vertexMap[he.To]
+                    )
+                );
+
+            foreach (var oldFace in _faces)
+            {
+                var halfEdges = oldFace.HalfEdges
+                    .Select(he => halfEdgeMap[he])
+                    .ToArray();
+                
+                newMesh.AddFace(halfEdges);
+            }
+
+            return newMesh;
         }
         
         /// <summary>
@@ -333,8 +428,11 @@ namespace Heds
                 .Select(v => v.Position)
                 .ToArray();
 
+            var vertexIndices = _vertices
+                .ToDictionary((v, i) => i);
+
             var triangles = _faces
-                .SelectMany(f => f.Vertices.Select(v => v.Id))
+                .SelectMany(f => f.Vertices.Select(v => vertexIndices[v]))
                 .ToArray();
             
             var mesh = new UnityEngine.Mesh

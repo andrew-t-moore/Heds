@@ -5,11 +5,11 @@ using UnityEngine;
 
 namespace Heds
 {
-    public class Vertex : IEquatable<Vertex>
+    public class Vertex : IEquatable<Vertex>, IMeshComponent
     {
         public Mesh Mesh { get; }
         public int Id { get; }
-        public Vector3 Position { get; }
+        public Vector3 Position { get; set; }
 
         private readonly List<HalfEdge> _incomingHalfEdges = new List<HalfEdge>();
         private readonly List<HalfEdge> _outgoingHalfEdges = new List<HalfEdge>();
@@ -63,6 +63,22 @@ namespace Heds
         internal void AddOutgoingHalfEdge(HalfEdge halfEdge)
         {
             _outgoingHalfEdges.Add(halfEdge);
+        }
+
+        internal void RemoveIncomingHalfEdge(HalfEdge halfEdge)
+        {
+            _incomingHalfEdges.Remove(halfEdge);
+        }
+        
+        internal void RemoveOutgoingHalfEdge(HalfEdge halfEdge)
+        {
+            _outgoingHalfEdges.Remove(halfEdge);
+        }
+
+        internal void ClearHalfEdges()
+        {
+            _incomingHalfEdges.Clear();
+            _outgoingHalfEdges.Clear();
         }
     }
 }
