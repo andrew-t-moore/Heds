@@ -150,7 +150,7 @@ namespace Heds
             _halfEdges.Clear();
             _faces.Clear();
         }
-        
+
         public HalfEdge AddHalfEdge(Vertex from, Vertex to)
         {
             var newId = TakeHalfEdgeId();
@@ -306,14 +306,15 @@ namespace Heds
             return this;
         }
         
-        // /// <summary>
-        // /// Builds a new sphere where all vertices have been clamped within two radii
-        // /// (based on the origin) - an inner radius and an outer radius.
-        // /// </summary>
-        // public Mesh ClampVerticesWithinRadiiOperation(float innerRadius, float outerRadius)
-        // {
-        //     return new ClampVerticesWithinRadiiOperation(innerRadius, outerRadius).Apply(this);
-        // }
+        /// <summary>
+        /// Builds a new sphere where all vertices have been clamped within two radii
+        /// (based on the origin) - an inner radius and an outer radius.
+        /// </summary>
+        public Mesh ClampVerticesWithinRadii(float innerRadius, float outerRadius)
+        {
+            new ClampVerticesWithinRadiiOperation(innerRadius, outerRadius).Apply(this);
+            return this;
+        }
         
         /// <summary>
         /// Builds a new mesh where each triangle has been subdivided into multiple triangles.
