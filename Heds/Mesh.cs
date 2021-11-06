@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Heds.Operations;
+using Heds.Selections;
 using Heds.Utilities;
 using UnityEngine;
 
@@ -87,6 +88,18 @@ namespace Heds
             }
         }
 
+        public void RemoveHalfEdge(HalfEdge halfEdge)
+        {
+            if (halfEdge.Face != null)
+            {
+                throw new InvalidOperationException($"Can't remove half-edge {halfEdge} from mesh - it is attached to face {halfEdge.Face}.");
+            }
+
+            _halfEdges.Remove(halfEdge);
+            halfEdge.From.RemoveOutgoingHalfEdge(halfEdge);
+            halfEdge.To.RemoveIncomingHalfEdge(halfEdge);
+        }
+        
         /// <summary>
         /// Removes all half-edges from this mesh. Will also remove
         /// all faces in the process.
@@ -335,6 +348,15 @@ namespace Heds
             return this;
         }
 
+        /// <summary>
+        /// Extrudes some faces towards or away from the origin point.
+        /// </summary>
+        public Mesh SphericalExtrude(FaceSelection selection, float distance)
+        {
+            new SphericalExtrudeOperation(selection, distance).Apply(this);
+            return this;
+        }
+        
         /// <summary>
         /// Returns the smallest axis-aligned bounding box that encompasses this mesh.
         /// </summary>

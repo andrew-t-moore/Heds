@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Heds.Selections
@@ -6,19 +7,29 @@ namespace Heds.Selections
     {
         public Face[] Faces { get; }
 
+        public FaceSelection(IEnumerable<Face> faces) : this(faces.ToArray())
+        {
+        }
+        
         public FaceSelection(params Face[] faces)
         {
             Faces = faces;
         }
 
+        public FaceSelection Union(FaceSelection other)
+        {
+            return Union(other.Faces);
+        }
+
+        public FaceSelection Union(IEnumerable<Face> faces)
+        {
+            return new FaceSelection(Faces.Union(faces).Distinct());
+        }
+        
         public FaceSelection Grow()
         {
-            var newFaces = Faces
-                .Union(Faces.SelectMany(f => f.GetAdjacentFaces()))
-                .Distinct()
-                .ToArray();
-
-            return new FaceSelection(newFaces);
+            var newFaces = Faces.SelectMany(f => f.GetAdjacentFaces());
+            return Union(newFaces);
         }
     }
 }
