@@ -63,76 +63,89 @@ namespace Heds
         }
 
         /// <summary>
-        /// Removes a face from this mesh.
+        /// Detaches a vertex from this mesh. Will remove any incident half-edges
+        /// and faces.
         /// </summary>
-        public void RemoveFace(Face face, bool removeHalfEdges = false)
+        public void DetachVertex(Vertex vertex)
         {
-            _faces.Remove(face);
+            vertex.Detach();
+            _vertices.Remove(vertex);
+        }
 
+        public void DetachVertices(params Vertex[] vertices)
+        {
+            foreach (var vertex in vertices)
+            {
+                vertex.Detach();
+            }
+            
+            _vertices.RemoveAll(vertices.Contains);
+        }
+        
+        /// <summary>
+        /// Detaches a face from this mesh.
+        /// </summary>
+        public void DetachFace(Face face, bool removeHalfEdges = false)
+        {
             if (removeHalfEdges)
             {
+                _halfEdges.RemoveAll(he => face.HalfEdges.Contains(he));
                 foreach (var halfEdge in face.HalfEdges)
                 {
-                    _halfEdges.Remove(halfEdge);
-                    halfEdge.Twin?.SetFace(null);
-                    halfEdge.From.RemoveOutgoingHalfEdge(halfEdge);
-                    halfEdge.To.RemoveIncomingHalfEdge(halfEdge);
+                    halfEdge.Detach();
                 }
             }
             else
             {
-                foreach (var halfEdge in face.HalfEdges)
-                {
-                    halfEdge.SetFace(null);
-                }
+                face.Detach();
             }
+
+            _faces.Remove(face);
         }
 
-        public void RemoveHalfEdge(HalfEdge halfEdge)
+        public void DetachHalfEdge(HalfEdge halfEdge)
         {
-            if (halfEdge.Face != null)
-            {
-                throw new InvalidOperationException($"Can't remove half-edge {halfEdge} from mesh - it is attached to face {halfEdge.Face}.");
-            }
-
+            halfEdge.Detach();
             _halfEdges.Remove(halfEdge);
-            halfEdge.From.RemoveOutgoingHalfEdge(halfEdge);
-            halfEdge.To.RemoveIncomingHalfEdge(halfEdge);
         }
         
         /// <summary>
         /// Removes all half-edges from this mesh. Will also remove
         /// all faces in the process.
         /// </summary>
-        public void ClearHalfEdgesAndFaces()
+        public void DetachHalfEdgesAndFaces()
         {
+            foreach (var halfEdge in _halfEdges)
+            {
+                halfEdge.Detach();
+            }
+            
             _faces.Clear();
             _halfEdges.Clear();
-
-            foreach (var vertex in _vertices)
-            {
-                vertex.ClearHalfEdges();
-            }
         }
         
         /// <summary>
-        /// Removes all faces from this mesh.
+        /// Detaches all faces from this mesh.
         /// </summary>
-        public void ClearFaces()
+        public void DetachAllFaces()
         {
-            _faces.Clear();
-
-            foreach (var halfEdge in _halfEdges)
+            foreach (var face in _faces)
             {
-                halfEdge.SetFace(null);
+                face.Detach();
             }
+            _faces.Clear();
         }
 
         /// <summary>
-        /// Clears all vertices, half-edges and faces from this mesh.
+        /// Detaches all vertices, half-edges and faces from this mesh.
         /// </summary>
-        public void Clear()
+        public void DetachAll()
         {
+            foreach (var vertex in _vertices)
+            {
+                vertex.Detach();
+            }
+            
             _vertices.Clear();
             _halfEdges.Clear();
             _faces.Clear();

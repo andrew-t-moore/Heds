@@ -31,11 +31,10 @@ namespace Heds.Tests.Operations
         public void NewMeshIsTopologicallyTheSame()
         {
             var oldMesh = QuadCube.Create()
-                .Triangulate()
-                .SubdivideTriangles()
-                .SubdivideTriangles();
+                .Triangulate();
         
             var newMesh = oldMesh
+                .Clone()
                 .Translate(new Vector3(1f, 0f, 0f));
 
             MeshTopologies.AssertEquivalent(oldMesh, newMesh);

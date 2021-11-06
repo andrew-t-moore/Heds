@@ -23,7 +23,7 @@ namespace Heds.Operations
                 .Select(GetIncidentFacesWithSameWindingOrder)
                 .ToArray();
             
-            mesh.Clear();
+            mesh.DetachAll();
 
             var newVertexMap = faceMidpoints
                 .ToDictionary(f => f.Key, f => mesh.AddVertex(f.Value));

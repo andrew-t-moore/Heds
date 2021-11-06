@@ -44,29 +44,26 @@ namespace Heds.Operations
                     .ToArray();
 
                 mesh.AddFace(newVertices);
-                
-                // Remove old face.
-                mesh.RemoveFace(face);
 
+                // Figure out side faces.
+                var facesToCreate = face.HalfEdges
+                    .Where(he => !internalHalfEdges.Contains(he))
+                    .Select(he => new[]{ he.From, he.To, vertexMap[he.To], vertexMap[he.From] })
+                    .ToArray();
+                
+                mesh.DetachFace(face);
+                
                 // Create side faces.
-                foreach (var oldHalfEdge in face.HalfEdges)
+                foreach (var vertexList in facesToCreate)
                 {
-                    if (!internalHalfEdges.Contains(oldHalfEdge))
-                    {
-                        mesh.AddFace(new[]
-                        {
-                            oldHalfEdge.From,
-                            oldHalfEdge.To,
-                            vertexMap[oldHalfEdge.To],
-                            vertexMap[oldHalfEdge.From]
-                        });
-                    }
+                    mesh.AddFace(vertexList);
                 }
+                
             }
 
             foreach (var halfEdge in internalHalfEdges)
             {
-                mesh.RemoveHalfEdge(halfEdge);
+                mesh.DetachHalfEdge(halfEdge);
             }
         }
 

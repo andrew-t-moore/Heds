@@ -52,7 +52,7 @@ namespace Heds.Tests.Operations
         }
 
         [Fact]
-        public void TwoFacesShouldSubdivideInto16Faces()
+        public void TwoFacesShouldSubdivideInto8Faces()
         {
             var mesh = BuildMeshWithTwoTriangularFaces()
                 .SubdivideTriangles();
@@ -78,8 +78,6 @@ namespace Heds.Tests.Operations
             mesh.Vertices.Should().HaveCount(9);
             mesh.Faces.Should().HaveCount(8);
             mesh.HalfEdges.Should().HaveCount(24);
-
-
         } 
     }
 }

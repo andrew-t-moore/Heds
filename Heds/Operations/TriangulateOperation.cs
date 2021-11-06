@@ -17,12 +17,12 @@ namespace Heds.Operations
             {
                 if (!existingFace.IsTriangle)
                 {
-                    mesh.RemoveFace(existingFace);
-
                     var vertices = existingFace
                         .Vertices
                         .ToArray();
-                    
+
+                    mesh.DetachFace(existingFace);
+
                     var p1 = vertices[0];
 
                     for (var i = 2; i < vertices.Length; i++)

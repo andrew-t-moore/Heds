@@ -20,11 +20,11 @@ namespace Heds.Operations
 
             for (var i = 0; i < _numLevels; i++)
             {
-                ApplyInternal2(mesh);
+                ApplyInternal(mesh);
             }
         }
 
-        private void ApplyInternal2(Mesh mesh)
+        private void ApplyInternal(Mesh mesh)
         {
             var midPointVertexLookup = new Dictionary<EdgeMidpoint, Vertex>();
 
@@ -75,7 +75,7 @@ namespace Heds.Operations
                     face.HalfEdges[2].From
                 });
 
-                mesh.RemoveFace(face, true);
+                mesh.DetachFace(face, true);
             }
         }
         

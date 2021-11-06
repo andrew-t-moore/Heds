@@ -8,6 +8,7 @@ namespace Heds
     public class Vertex : IEquatable<Vertex>, IMeshComponent
     {
         public Mesh Mesh { get; }
+        public bool IsDetached { get; private set; }
         public int Id { get; }
         public Vector3 Position { get; set; }
 
@@ -79,6 +80,46 @@ namespace Heds
         {
             _incomingHalfEdges.Clear();
             _outgoingHalfEdges.Clear();
+        }
+
+        internal void Detach()
+        {
+            if (IsDetached)
+                return;
+            
+            IsDetached = true;
+
+            foreach (var halfEdge in IncomingHalfEdges)
+            {
+                halfEdge.Detach();
+            }
+            
+            foreach (var halfEdge in OutgoingHalfEdges)
+            {
+                halfEdge.Detach();
+            }
+            
+            _incomingHalfEdges.Clear();
+            _outgoingHalfEdges.Clear();
+        }
+
+        internal void OnHalfEdgeDetach(HalfEdge halfEdge)
+        {
+            if (IsDetached)
+                return;
+            
+            if (halfEdge.From.Equals(this))
+            {
+                _outgoingHalfEdges.Remove(halfEdge);
+            }
+            else if (halfEdge.To.Equals(this))
+            {
+                _incomingHalfEdges.Remove(halfEdge);
+            }
+            else
+            {
+                throw new InvalidOperationException($"Can't remove the half-edge {halfEdge} from vertex {this} - the half-edge is not incident on this vertex.");
+            }
         }
     }
 }

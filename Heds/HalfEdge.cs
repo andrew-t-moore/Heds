@@ -6,10 +6,11 @@ namespace Heds
     public class HalfEdge : IEquatable<HalfEdge>, IMeshComponent
     {
         public Mesh Mesh => From.Mesh;
+        public bool IsDetached { get; }
         public int Id { get; }
         public HalfEdge Twin { get; private set; }
-        public Vertex From { get; }
-        public Vertex To { get; }
+        public Vertex From { get; private set; }
+        public Vertex To { get; private set; }
         public Face Face { get; private set; }
         public float Length => (To.Position - From.Position).magnitude;
 
@@ -56,6 +57,39 @@ namespace Heds
         public void SetTwin(HalfEdge twin)
         {
             Twin = twin;
+        }
+
+        internal void Detach()
+        {
+            if (IsDetached)
+                return;
+
+            From.OnHalfEdgeDetach(this);
+            To.OnHalfEdgeDetach(this);
+            Face?.Detach();
+            Twin?.SetTwin(null);
+            
+            Twin = null;
+            From = null;
+            To = null;
+        }
+
+        /// <summary>
+        /// Called when the face incident on this half-edge is being detached.
+        /// </summary>
+        internal void OnFaceDetach(Face face)
+        {
+            if (IsDetached)
+                return;
+            
+            if (face.Equals(Face))
+            {
+                Face = null;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Can't remove the face {face} from half-edge {this} - the face is not incident on this half-edge.");
+            }
         }
     }
 }

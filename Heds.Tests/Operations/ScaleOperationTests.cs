@@ -73,12 +73,9 @@ namespace Heds.Tests.Operations
         [Fact]
         public void NewMeshIsTopologicallyTheSame()
         {
-            var oldMesh = QuadCube.Create()
-                .Triangulate()
-                .SubdivideTriangles()
-                .SubdivideTriangles();
-        
+            var oldMesh = QuadCube.Create();
             var newMesh = oldMesh
+                .Clone()
                 .Scale(2f);
 
             MeshTopologies.AssertEquivalent(oldMesh, newMesh);

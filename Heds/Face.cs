@@ -8,9 +8,10 @@ namespace Heds
     public class Face : IEquatable<Face>, IMeshComponent
     {
         public Mesh Mesh => HalfEdges[0].Mesh;
+        public bool IsDetached { get; private set; }
         public int Id { get; }
         public IReadOnlyList<HalfEdge> HalfEdges => _halfEdges;
-        private readonly HalfEdge[] _halfEdges;
+        private HalfEdge[] _halfEdges;
 
         public IEnumerable<Vertex> Vertices => HalfEdges.Select(he => he.From);
 
@@ -78,6 +79,29 @@ namespace Heds
         public override int GetHashCode()
         {
             return Id;
+        }
+
+        internal void Detach()
+        {
+            if (IsDetached)
+                return;
+            
+            IsDetached = true;
+
+            foreach (var halfEdge in _halfEdges)
+            {
+                halfEdge.OnFaceDetach(this);
+            }
+            
+            _halfEdges = Array.Empty<HalfEdge>();
+        }
+
+        /// <summary>
+        /// Called when one of the half-edges is removed.
+        /// </summary>
+        internal void OnHalfEdgeDetach(HalfEdge halfEdge)
+        {
+            Detach();
         }
     }
 }

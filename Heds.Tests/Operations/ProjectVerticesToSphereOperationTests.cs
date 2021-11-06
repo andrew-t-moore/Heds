@@ -28,12 +28,9 @@ namespace Heds.Tests.Operations
         {
             const float radius = 5f;
 
-            var oldMesh = QuadCube.Create()
-                .Triangulate()
-                .SubdivideTriangles()
-                .SubdivideTriangles();
-        
+            var oldMesh = QuadCube.Create();
             var newMesh = oldMesh
+                .Clone()
                 .ProjectVerticesToSphere(radius);
 
             MeshTopologies.AssertEquivalent(oldMesh, newMesh);
