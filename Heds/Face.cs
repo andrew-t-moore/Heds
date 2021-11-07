@@ -95,13 +95,5 @@ namespace Heds
             
             _halfEdges = Array.Empty<HalfEdge>();
         }
-
-        /// <summary>
-        /// Called when one of the half-edges is removed.
-        /// </summary>
-        internal void OnHalfEdgeDetach(HalfEdge halfEdge)
-        {
-            Detach();
-        }
     }
 }
