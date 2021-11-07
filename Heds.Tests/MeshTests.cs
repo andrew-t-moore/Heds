@@ -115,6 +115,5 @@ namespace Heds.Tests
             f0.GetAdjacentFaces().Should().ContainSingle(f => ReferenceEquals(f, f1));
             f1.GetAdjacentFaces().Should().ContainSingle(f => ReferenceEquals(f, f0));
         }
-
     }
 }

@@ -326,22 +326,6 @@ namespace Heds
             return this;
         }
         
-        // /// <summary>
-        // /// Filters a mesh down to only the requested faces.
-        // /// </summary>
-        // public Mesh Filter(FaceSelection selection)
-        // {
-        //     return new FilterFacesOperation(selection).Apply(this);
-        // }
-        //
-        // /// <summary>
-        // /// Filters a mesh down to only the requested faces.
-        // /// </summary>
-        // public Mesh Filter(params Face[] faces)
-        // {
-        //     return Filter(new FaceSelection(faces));
-        // }
-        
         /// <summary>
         /// Rebuilds the faces of a mesh so that all the faces are triangles.
         /// </summary>
