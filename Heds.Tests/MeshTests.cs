@@ -128,5 +128,15 @@ namespace Heds.Tests
             meshes.Should().OnlyContain(kvp => kvp.Value.Vertices.Count == 4);
             meshes.Should().OnlyContain(kvp => kvp.Value.HalfEdges.Count == 4);
         }
+
+        [Fact] public void SplittingAMeshDoesNotChangeTheOriginalMesh()
+        {
+            var mesh = QuadCube.Create();
+            mesh.SplitMesh(f => f.Id);
+
+            mesh.Vertices.Should().HaveCount(8);
+            mesh.HalfEdges.Should().HaveCount(24);
+            mesh.Faces.Should().HaveCount(6);
+        }
     }
 }
