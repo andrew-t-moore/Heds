@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using FluentAssertions;
+using Heds.Primitives;
 using Xunit;
 
 namespace Heds.Tests
@@ -114,6 +115,18 @@ namespace Heds.Tests
 
             f0.GetAdjacentFaces().Should().ContainSingle(f => ReferenceEquals(f, f1));
             f1.GetAdjacentFaces().Should().ContainSingle(f => ReferenceEquals(f, f0));
+        }
+
+        [Fact]
+        public void CanSplitAMeshIntoMultipleMeshes()
+        {
+            var mesh = QuadCube.Create();
+            var meshes = mesh.SplitMesh(f => f.Id);
+
+            meshes.Should().HaveCount(6);
+            meshes.Should().OnlyContain(kvp => kvp.Value.Faces.Count == 1);
+            meshes.Should().OnlyContain(kvp => kvp.Value.Vertices.Count == 4);
+            meshes.Should().OnlyContain(kvp => kvp.Value.HalfEdges.Count == 4);
         }
     }
 }

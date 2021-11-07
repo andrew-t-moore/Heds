@@ -66,13 +66,15 @@ namespace Heds
         /// Detaches a vertex from this mesh. Will remove any incident half-edges
         /// and faces.
         /// </summary>
-        public void DetachVertex(Vertex vertex)
+        public Mesh DetachVertex(Vertex vertex)
         {
             vertex.Detach();
             _vertices.Remove(vertex);
+
+            return this;
         }
 
-        public void DetachVertices(params Vertex[] vertices)
+        public Mesh DetachVertices(params Vertex[] vertices)
         {
             foreach (var vertex in vertices)
             {
@@ -80,12 +82,14 @@ namespace Heds
             }
             
             _vertices.RemoveAll(vertices.Contains);
+
+            return this;
         }
         
         /// <summary>
         /// Detaches a face from this mesh.
         /// </summary>
-        public void DetachFace(Face face, bool removeHalfEdges = false)
+        public Mesh DetachFace(Face face, bool removeHalfEdges = false)
         {
             if (removeHalfEdges)
             {
@@ -101,19 +105,23 @@ namespace Heds
             }
 
             _faces.Remove(face);
+
+            return this;
         }
 
-        public void DetachHalfEdge(HalfEdge halfEdge)
+        public Mesh DetachHalfEdge(HalfEdge halfEdge)
         {
             halfEdge.Detach();
             _halfEdges.Remove(halfEdge);
+
+            return this;
         }
         
         /// <summary>
         /// Removes all half-edges from this mesh. Will also remove
         /// all faces in the process.
         /// </summary>
-        public void DetachHalfEdgesAndFaces()
+        public Mesh DetachHalfEdgesAndFaces()
         {
             foreach (var halfEdge in _halfEdges)
             {
@@ -122,24 +130,28 @@ namespace Heds
             
             _faces.Clear();
             _halfEdges.Clear();
+
+            return this;
         }
         
         /// <summary>
         /// Detaches all faces from this mesh.
         /// </summary>
-        public void DetachAllFaces()
+        public Mesh DetachAllFaces()
         {
             foreach (var face in _faces)
             {
                 face.Detach();
             }
             _faces.Clear();
+            
+            return this;
         }
 
         /// <summary>
         /// Detaches all vertices, half-edges and faces from this mesh.
         /// </summary>
-        public void DetachAll()
+        public Mesh DetachAll()
         {
             foreach (var vertex in _vertices)
             {
@@ -149,8 +161,27 @@ namespace Heds
             _vertices.Clear();
             _halfEdges.Clear();
             _faces.Clear();
+
+            return this;
         }
 
+        /// <summary>
+        /// Detaches any half-edge that isn't part of a face.
+        /// </summary>
+        public Mesh DetachHalfEdgesWithoutFaces()
+        {
+            foreach (var halfEdge in _halfEdges)
+            {
+                if (halfEdge.Face == null)
+                {
+                    halfEdge.Detach();
+                }
+            }
+
+            _halfEdges.RemoveAll(he => he.IsDetached);
+            return this;
+        }
+        
         public HalfEdge AddHalfEdge(Vertex from, Vertex to)
         {
             var newId = TakeHalfEdgeId();
@@ -257,6 +288,30 @@ namespace Heds
         {
             newFace = AddFace(vertices);
             return this;
+        }
+
+        /// <summary>
+        /// Splits a mesh into multiple meshes. Uses a partitioning function to
+        /// determine which mesh each face should go into. The original mesh is left
+        /// unchanged.
+        /// </summary>
+        /// <param name="facePartitionFn">A function that partitions faces into sets.</param>
+        /// <returns>An array of new meshes.</returns>
+        public IReadOnlyDictionary<T, Mesh> SplitMesh<T>(Func<Face, T> facePartitionFn)
+        {
+            return _faces
+                .GroupBy(facePartitionFn)
+                .ToDictionary(keyAndFaces => keyAndFaces.Key, keyAndFaces =>
+                {
+                    var builder = new MeshMapHelper(this);
+                
+                    foreach (var face in keyAndFaces)
+                    {
+                        builder.GetOrCloneFace(face);
+                    }
+
+                    return builder.Mesh;
+                });
         }
         
         /// <summary>
@@ -395,7 +450,7 @@ namespace Heds
             
             return new Bounds(center, size);
         }
-
+        
         /// <summary>
         /// Creates a deep clone of this mesh. All new (but equivalent) faces, half-edges
         /// and vertices will be created.
