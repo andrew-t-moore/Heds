@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Heds.Utilities
 {
@@ -28,6 +29,17 @@ namespace Heds.Utilities
         public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
         {
             return new HashSet<T>(source);
+        }
+
+        public static bool ContainsExactlyOneItem<T>(this IEnumerable<T> source)
+        {
+            using (var enumerator = source.GetEnumerator())
+            {
+                if (!enumerator.MoveNext())
+                    return false;
+
+                return !enumerator.MoveNext();
+            }
         }
     }
 }

@@ -166,19 +166,20 @@ namespace Heds
         }
 
         /// <summary>
-        /// Detaches any half-edge that isn't part of a face.
+        /// Detaches any half-edges that don't have an incident face.
         /// </summary>
-        public Mesh DetachHalfEdgesWithoutFaces()
+        public Mesh DetachUnusedHalfEdges()
         {
-            foreach (var halfEdge in _halfEdges)
-            {
-                if (halfEdge.Face == null)
-                {
-                    halfEdge.Detach();
-                }
-            }
-
-            _halfEdges.RemoveAll(he => he.IsDetached);
+            new DetachUnusedHalfEdgesOperation().Apply(this);
+            return this;
+        }
+        
+        /// <summary>
+        /// Detaches any vertices that don't have incident half-edges.
+        /// </summary>
+        public Mesh DetachUnusedVertices()
+        {
+            new DetachUnusedVerticesOperation().Apply(this);
             return this;
         }
         
@@ -313,6 +314,48 @@ namespace Heds
                     return builder.Mesh;
                 });
         }
+
+        /// <summary>
+        /// Breaks a potentially disconnected mesh (i.e. a mesh where not all faces are connected
+        /// to all other faces) into one or more connected sub-meshes.
+        /// </summary>
+        public IEnumerable<IReadOnlyList<Face>> IdentifyConnectedSubMeshes()
+        {
+            if (_faces.Count == 0)
+                yield break;
+
+            var visited = new HashSet<Face>();
+            
+            foreach (var face in _faces)
+            {
+                if (visited.Contains(face))
+                    continue;
+            
+                visited.Add(face);
+                
+                var facesInThisSubMesh = new List<Face>{ face };
+                var frontier = new Queue<Face>(face.GetAdjacentFaces());
+            
+                while (frontier.Any())
+                {
+                    var currentFace = frontier.Dequeue();
+                    if (visited.Contains(currentFace))
+                        continue;
+                    
+                    facesInThisSubMesh.Add(currentFace);
+                    frontier.EnqueueRange(currentFace.GetAdjacentFaces());
+                    visited.Add(currentFace);
+                }
+
+                yield return facesInThisSubMesh;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether every face in this mesh is connected to every other face.
+        /// Uses face-adjacency to determine connectivity.
+        /// </summary>
+        public bool AreAllFacesConnected() => IdentifyConnectedSubMeshes().ContainsExactlyOneItem();
         
         /// <summary>
         /// Scales a mesh.
@@ -409,7 +452,7 @@ namespace Heds
             new SphericalExtrudeOperation(selection, distance).Apply(this);
             return this;
         }
-        
+
         /// <summary>
         /// Returns the smallest axis-aligned bounding box that encompasses this mesh.
         /// </summary>

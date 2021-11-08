@@ -4,6 +4,7 @@ using System.Numerics;
 using FluentAssertions;
 using Heds.Primitives;
 using Xunit;
+using Vector3 = UnityEngine.Vector3;
 
 namespace Heds.Tests
 {
@@ -67,6 +68,29 @@ namespace Heds.Tests
             mesh.Vertices.Should().HaveCount(8);
             mesh.HalfEdges.Should().HaveCount(24);
             mesh.Faces.Should().HaveCount(6);
+        }
+
+        [Fact]
+        public void AreAllFacesConnectedReturnsTrueForConnectedMesh()
+        {
+            QuadCube.Create().AreAllFacesConnected().Should().BeTrue();
+        }
+        
+        [Fact]
+        public void AreAllFacesConnectedReturnsFalseForDisconnectedMesh()
+        {
+            new Mesh()
+                .AddVertex(Vector3.zero, out var v0)
+                .AddVertex(Vector3.down, out var v1)
+                .AddVertex(Vector3.left, out var v2)
+                .AddVertex(Vector3.up, out var v3)
+                .AddVertex(Vector3.back, out var v4)
+                .AddVertex(Vector3.forward, out var v5)
+                .AddFace(new[] { v0, v1, v2 }, out _)
+                .AddFace(new[] { v3, v4, v5 }, out _)
+                .AreAllFacesConnected()
+                .Should()
+                .BeFalse();
         }
     }
 }
