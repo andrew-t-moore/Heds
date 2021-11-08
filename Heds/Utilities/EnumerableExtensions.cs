@@ -35,10 +35,7 @@ namespace Heds.Utilities
         {
             using (var enumerator = source.GetEnumerator())
             {
-                if (!enumerator.MoveNext())
-                    return false;
-
-                return !enumerator.MoveNext();
+                return enumerator.MoveNext() && !enumerator.MoveNext();
             }
         }
     }
