@@ -47,3 +47,36 @@ var unityMesh = QuadCube.Create()
   .ProjectToSphere(sphere)
   .ToUnityMesh();
 ```
+
+# Custom shapes
+If you want to generate your own shape instead of starting from a common shape, you can do that too:
+
+```csharp
+new Mesh()
+    .AddVertex(0f, 0f, 0f, out var v0)
+    .AddVertex(1f, 0f, 0f, out var v1)
+    .AddVertex(1f, 1f, 0f, out var v2)
+    .AddVertex(0f, 1f, 0f, out var v3)
+    .AddFace(new[] { v0, v1, v2 }, out var f0)
+    .AddFace(new[] { v0, v2, v3 }, out var f1);
+```
+
+This is what the built-in primitives are doing under the hood.
+
+- See [Icosahedron.cs](Heds/Primitives/Icosahedron.cs)
+- See [QuadCube.cs](Heds/Primitives/QuadCube.cs)
+
+# Navigating meshes
+Once you've built a mesh, you can navigate and modify the mesh easily. Some examples:
+
+```csharp
+myMesh.Faces[0].GetAdjacentFaces();
+```
+
+```csharp
+myMesh.Vertices[0].IncomingHalfEdges;
+```
+
+```csharp
+myMesh.HalfEdges[0].Twin.Face;
+```
