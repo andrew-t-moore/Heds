@@ -3,7 +3,11 @@ A Half-Edge data structure for Unity. You can learn about Half Edge data structu
 
 This library allows you to build up meshes vertex by vertex, face by face. It's not a replacement for 3D modelling tools - rather it gives you the ability to create and manipulate shapes using a fairly simple object model.
 
-For example, if you want to generate a sphere, you could do something like this:
+# Compatibility
+This library is compatible with Unity `2020.3.21f1`. It doesn't hit much of the Unity API surface area, so I expect to to be reasonably future proof.
+
+# Examples
+If you want to generate a sphere, you could do something like this:
 
 ```csharp
 var unityMesh = Icosahedron.Create()
